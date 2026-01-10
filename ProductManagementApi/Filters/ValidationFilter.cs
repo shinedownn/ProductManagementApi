@@ -33,10 +33,8 @@ namespace ProductManagementApi.Filters
                         {
                             Status=false,
                             Data=null,
-                            Message="Errors was handle",
-                            //Errors = result.Errors.Select(x => x.ErrorMessage).ToList()
+                            Message="Hata bulundu",
                             Errors= errors.Select((k) => k.Key +" : " + string.Join(",", k.Value)).ToList()
-
                         };
                         context.Result = new BadRequestObjectResult(response);
 

@@ -5,6 +5,7 @@ using ProductManagementApi.Response;
 using ProductManagementApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ProductManagementApi.Controllers
 {
@@ -96,6 +97,7 @@ namespace ProductManagementApi.Controllers
             }; 
         }
 
+        [SwaggerIgnore]
         /// <summary>
         /// https://fakestoreapi.com/products 'dan çektiği ürün listesini veritabanına toplu ekler
         /// </summary>
