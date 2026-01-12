@@ -2,7 +2,6 @@ using ProductManagementApi.DataAccess.Abstract;
 using ProductManagementApi.DataAccess.Concrete;
 using ProductManagementApi.Filters;
 using ProductManagementApi.Mapping;
-using ProductManagementApi.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,6 +10,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using ProductManagementApi;
+using ProductManagementApi.Services.FakestoreApi.Concrete;
+using ProductManagementApi.Services.FakestoreApi.Abstract;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +22,13 @@ builder.Services.AddControllers(options =>
 });
  
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddAutoMapper(typeof(UserProfile));
-builder.Services.AddAutoMapper(typeof(ProductProfile));  
+builder.Services.AddAutoMapper(typeof(UserEntityProfile));
+builder.Services.AddAutoMapper(typeof(UserParamsProfile));
 
+builder.Services.AddAutoMapper(typeof(ProductEntityProfile));  
+builder.Services.AddAutoMapper(typeof(ProductParamsProfile));     
+
+//builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IProductRepository, ProductRepository>();
 builder.Services.AddTransient<IExternalProductService, ExternalProductService>();
@@ -34,10 +40,9 @@ builder.Services.AddSwaggerGen(swagger =>
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     swagger.IncludeXmlComments(xmlPath); 
     swagger.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "JWT Token Authentication API",
-        Description = "ASP.NET Core 3.1 Web API"
+    { 
+        Title = "Product Management API",
+        Description = "ASP.NET Core 8 Web API"
     });  
     swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
@@ -85,10 +90,11 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
-});  
-
+});
+builder.Services.Configure<AppSettingsModel>(builder.Configuration);
 var app = builder.Build();
- 
+
+ProductManagementApi.Helpers.ServiceHelper.Services = app.Services;
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

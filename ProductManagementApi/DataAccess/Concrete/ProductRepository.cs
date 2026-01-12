@@ -1,125 +1,124 @@
-﻿using AutoMapper;
-using Dapper;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using ProductManagementApi.DataAccess.Abstract;
 using ProductManagementApi.Entities.Concrete;
-using ProductManagementApi.Entities.Dtos.ProductDto;
-using ProductManagementApi.Entities.EndpointParams.Product;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
-using Z.Dapper.Plus;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Reflection;
+
 
 namespace ProductManagementApi.DataAccess.Concrete
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : IProductRepository, IBulkInsertable<ProductEntity>
     {
-        private readonly IMapper _mapper;
-        public ProductRepository(IConfiguration configuration, IMapper mapper) : base(configuration)
+        public ProductRepository(IOptions<AppSettingsModel> appSettings) : base(appSettings)
         {
-            _mapper = mapper;
         }
 
-        public override async Task<bool> BulkInsert(IEnumerable<CreateProductParams> paramList)
+        public override async Task<bool> BulkInsertAsync(IEnumerable<ProductEntity> entityList)
         {
-            using (IDbConnection db = CreateConnection())
+            var result = false;
+            using (SqlConnection db = CreateConnection())
             {
                 try
                 {
-                    DapperPlusManager
-                .Entity<ProductEntity>()
-                .Table("Products").Identity(x => x.Id); ;
-                    var d = paramList.Select(x => new ProductEntity()
+                    db.Open();
+
+                    var d = entityList.Select(x => x with
                     {
-                        Category = x.Category,
                         CreatedAt = DateTime.Now,
-                        IsActive = true,
-                        Name = x.Name,
-                        Price = x.Price
+                        IsActive = true
                     });
-                    var result = await db.BulkInsertAsync(d);
-                    return true;
+                    
+                    await Dapper.Bulk.DapperBulk.BulkInsertAsync<ProductEntity>(db,d);
+                    db.Close();
+                    result= true;
                 }
                 catch (Exception ex)
                 {
-                    return false; 
-                } 
+                    result = false;
+                }
+                finally { db.Close(); }     
+                return result;
             }
         }
 
-        public override async Task<bool> CreateAsync(CreateProductParams param)
+        public override async Task<bool> CreateAsync(ProductEntity entity)
         {
             using (IDbConnection db = CreateConnection())
             {
-                var list = param.GetType().GetProperties()
-                    .Where(p => p.GetValue(param) != null)
+                var list = entity.GetType().GetProperties()
+                    .Where(p => p.CanRead &&
+                p.Name != "EqualityContract" && p.GetCustomAttribute<KeyAttribute>() == null && p.GetValue(entity) != null)
                     .ToList();
                 Dictionary<string, object> spParams = new Dictionary<string, object>();
 
                 list.ForEach(x =>
                 {
-                    spParams[x.Name] = x.GetValue(param);
+                    spParams[x.Name] = x.GetValue(entity);
                 });
                 var result = await db.ExecuteAsync($"sp_Product_Create", spParams, commandType: CommandType.StoredProcedure);
                 return result > 0;
             }
         }
 
-        public override async Task<bool> DeleteAsync(DeleteProductParams param)
+        public override async Task<bool> DeleteAsync(int id)
         {
             using (IDbConnection db = CreateConnection())
-            {
-                var list = param.GetType().GetProperties()
-                    .Where(p => p.GetValue(param) != null)
-                    .ToList();
-                Dictionary<string, object> spParams = new Dictionary<string, object>();
-
-                list.ForEach(x =>
-                {
-                    spParams[x.Name] = x.GetValue(param);
-                });
-                int result = await db.ExecuteAsync($"sp_Product_Delete", spParams, commandType: CommandType.StoredProcedure);
+            {                 
+                int result = await db.ExecuteAsync($"sp_Product_Delete", new { Id=id }, commandType: CommandType.StoredProcedure);
                 return result > 0;
             }
         }
 
-        public override async Task<GetProductDto> GetAsync(GetProductParams param)
+        public override async Task<ProductEntity> GetAsync(int id)
+        {
+            using (IDbConnection db = CreateConnection())
+            {             
+                return await db.QueryFirstOrDefaultAsync<ProductEntity>($"sp_Product_Get", new {Id=id}, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public override async Task<ProductEntity> GetAsync(ProductEntity where)
         {
             using (IDbConnection db = CreateConnection())
             {
-                var list = param.GetType().GetProperties()
-                    .Where(p => p.GetValue(param) != null)
+                var list = where.GetType().GetProperties()
+                    .Where(p =>p.CanRead &&
+                p.Name != "EqualityContract" && p.GetValue(where) != null)
                     .ToList();
                 Dictionary<string, object> spParams = new Dictionary<string, object>();
 
                 list.ForEach(x =>
                 {
-                    spParams[x.Name] = x.GetValue(param);
+                    spParams[x.Name] = x.GetValue(where);
                 });
-
-                return _mapper.Map<GetProductDto>(await db.QueryFirstOrDefaultAsync<ProductEntity>($"sp_Product_Get", spParams, commandType: CommandType.StoredProcedure));
+                return await db.QueryFirstOrDefaultAsync<ProductEntity>($"sp_Product_Get", spParams, commandType: CommandType.StoredProcedure);
             }
         }
 
-        public override async Task<IEnumerable<GetProductDto>> GetListAsync()
+        public override async Task<IEnumerable<ProductEntity>> GetListAsync()
         {
             using (IDbConnection db = CreateConnection())
             {
-                var result = await db.QueryAsync<ProductEntity>($"sp_Product_GetList", commandType: CommandType.StoredProcedure);
-                return _mapper.Map<IEnumerable<GetProductDto>>(result);
+                return await db.QueryAsync<ProductEntity>($"sp_Product_GetList", commandType: CommandType.StoredProcedure);                 
             }
         }
 
-        public override async Task<bool> UpdateAsync(UpdateProductParams param)
+        public override async Task<bool> UpdateAsync(ProductEntity entity)
         {
             using (IDbConnection db = CreateConnection())
             {
-                var list = param.GetType().GetProperties()
-                    .Where(p => p.GetValue(param) != null)
+                var list = entity.GetType().GetProperties()
+                    .Where(p => p.CanRead &&
+                p.Name != "EqualityContract" && p.GetValue(entity) != null)
                     .ToList();
                 Dictionary<string, object> spParams = new Dictionary<string, object>();
 
                 list.ForEach(x =>
                 {
-                    spParams[x.Name] = x.GetValue(param);
+                    spParams[x.Name] = x.GetValue(entity);
                 });
 
                 int result = await db.ExecuteAsync($"sp_Product_Update", spParams, commandType: CommandType.StoredProcedure);

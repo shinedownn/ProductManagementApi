@@ -7,10 +7,10 @@ namespace ProductManagementApi.Entities.Validations
     {
         public CreateProductParamsValidator()
         {
-            RuleFor(x=>x.Name).NotEmpty().WithMessage("Boş geçilemez");
-            RuleFor(x=>x.Category).NotEmpty().WithMessage("Boş geçilemez");
-            RuleFor(x=>x.IsActive).NotEmpty().WithMessage("Boş geçilemez");
-            RuleFor(x=>x.Price).NotEmpty().WithMessage("Boş geçilemez");
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Boş geçilemez").MaximumLength(500).WithMessage("İsim alanı en fazla 500 karakter olabilir."); 
+            RuleFor(x=>x.Category).NotEmpty().WithMessage("Boş geçilemez").MaximumLength(50).WithMessage("Kategori alanı en fazla 500 karakter olabilir."); ;
+            RuleFor(x=>x.IsActive).NotNull().WithMessage("Boş geçilemez");
+            RuleFor(x=>x.Price).NotEmpty().WithMessage("Boş geçilemez").GreaterThan(0).WithMessage("Fiyat değeri 0'dan büyük olmalıdır");
         }
     }
 }

@@ -1,8 +1,6 @@
-﻿using ProductManagementApi.Response;
+﻿using Microsoft.AspNetCore.Mvc;
+using ProductManagementApi.Response;
 using ProductManagementApi.Sql_Script;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ProductManagementApi.Controllers
 {
@@ -16,7 +14,7 @@ namespace ProductManagementApi.Controllers
             _database = new Database(configuration);
         }
         /// <summary>
-        /// Veritabanı scriptini çalıştırır. Tabloları ve prosedürleri ekler. Boş bir veritabanı açınız ve appsettings.Development.json dosyasına yazınız
+        /// Veritabanı scriptini çalıştırır. Tabloları , prosedürleri ve test datalarını ekler. Boş bir veritabanı açınız ve appsettings.Development.json dosyasına yazınız
         /// </summary>
         /// <returns>"Database oluşturuldu" veya "Database oluşturulamadı" cevabı döner</returns>
         [HttpPost]

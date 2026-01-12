@@ -4,9 +4,9 @@ using ProductManagementApi.Entities.Dtos.UserDto;
 
 namespace ProductManagementApi.Mapping
 {
-    public class UserProfile : Profile
+    public class UserEntityProfile : Profile
     {
-        public UserProfile()
+        public UserEntityProfile()
         {
             CreateMap<UserEntity, GetUserDto>().ReverseMap();
             CreateMap<UserEntity, CreateUserDto>().ReverseMap();

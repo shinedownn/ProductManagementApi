@@ -7,7 +7,7 @@ namespace ProductManagementApi.Entities.Validations
     {
         public DeleteProductParamsValidator()
         {
-            RuleFor(x => x.Id).NotEmpty().When(x => x.Id < 1).WithMessage("1'den küçük olamaz");
+            RuleFor(x => x.Id).NotEmpty().LessThan(1).WithMessage("Id değeri 1'den küçük olamaz");
         }
     }
 }
