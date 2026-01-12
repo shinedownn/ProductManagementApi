@@ -22,7 +22,7 @@ _Nasıl çalıştırılır?_
 1- ${\color{orange}{MSSQL}}$'de veritabanı yaratılır  
 2- ${\color{olive}{Connection \space string}}$ düzenlenir  
 3- ${\color{green}{Swagger}}$ ile ${\color{blue} \text{/api/Database}}$ tetiklenerek ${\color{blue}{Sql \space {Script \backslash Init.sql}}}$ script dosyası çalıştırılır. Veritabanı tabloları ve prosedürler örnek veriler ile birlikte kurulur. Örnek veriler https://fakestoreapi.com/products 'den çekilir ve fiyat bilgileri değiştirilerek veritabanına yazılır    
-4- ${\color{green}{Swagger}}$ ile ${\color{blue} \text{/api/Token}}$ demo kullanıcı ile tetiklenir   
+4- ${\color{green}{Swagger}}$ ile ${\color{blue} \text{/api/Token}}$ demo kullanıcı ile tetiklenir, token alınır. Authorize olunur.   
 5- ${\color{green}{Swagger}}$ ile ${\color{blue} \text{/api/ExternalProduct/GetDifferentProducts}}$ ile veritabanındaki ürünlerle dış kaynaktan çekilen ürün listesi karşılaştırma raporu alınır
 
 _Token almak için_
